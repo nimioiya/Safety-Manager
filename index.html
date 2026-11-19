@@ -116,17 +116,17 @@ function calc(){
   });
   h+='<div class="card g"><div>3つすべて回避できる確率 ＝ '+av.map(a=>pc(a,0)).join(' × ')+'</div><div class="big">'+pc(all)+'</div>'+
     '<div class="note">残りの '+pc(1-all)+' は、どれか1つ以上の事象が起きるリスクです。</div></div>';
-  h+='<h2>③ 10,000ロットで検証する</h2><div class="card"><button class="btn" id="sim">▶ 10,000ロットを生産する</button><div id="simOut" style="margin-top:10px"></div></div>';
+  h+='<h2>③ 100ロットで検証する</h2><div class="card"><button class="btn" id="sim">▶ 100ロットを生産する</button><div id="simOut" style="margin-top:10px"></div></div>';
   out.innerHTML=h;
   $('sim').onclick=sim;
 }
 function disaster(){
   return '<div class="card" style="background:#fff0ef;border-color:#f0b4b0"><b style="color:var(--red);font-size:1.2rem">🌋 大災害が発生しました！</b>'+
-   '<p>10,000ロットすべて事故なし……でも、表に載っていない<b>地震で生産ロットが</b>崩れてしまいました。<br>どんなに対策を重ねても、想定していないリスクは残ります。これがリスク評価の限界です。</p></div>';
+   '<p>想定外<b>地震で生産ロットが</b>崩れてしまいました。<br>どんなに対策を重ねても、想定していないリスクは残ります。これがリスク評価の限界です。</p></div>';
 }
 function sim(){
   if(!res)return;
-  const N=10000,c=[0,0,0];let safe=0;
+  const N=100,c=[0,0,0];let safe=0;
   for(let t=0;t<N;t++){let ok=true;for(let k=0;k<3;k++){if(Math.random()>=res.av[k]){c[k]++;ok=false;}}if(ok)safe++;}
   $('simOut').innerHTML='<div>事故なしのロット：<b class="big">'+safe.toLocaleString()+'</b> / '+N.toLocaleString()+'（理論値 '+pc(res.all)+'）</div>'+
    '<table><tr><th>事象</th><th>発生した回数</th><th>理論値</th></tr>'+HZ.map((h,k)=>'<tr><td>'+h+'</td><td>'+c[k].toLocaleString()+'</td><td>'+Math.round((1-res.av[k])*N).toLocaleString()+'</td></tr>').join('')+'</table>'+
