@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>お菓子工場 安全対策アクティビティ</title>
+<title>お菓子工場 リスク評価アクティビティ</title>
 <style>
 :root{--green:#1f9d57;--green-d:#15783f;--green-l:#e8f6ee;--green-m:#bfe5cf;--navy:#10264a;--ink:#25324a;--gray:#6b778c;--line:#e2e8f0;--red:#d9534f}
 *{box-sizing:border-box}
@@ -47,15 +47,11 @@ th{background:#f6f9f7;color:var(--navy)}
 </head>
 <body>
 <main>
-  <h1>🍪 お菓子工場 安全対策アクティビティ</h1>
-  <p>対策を<b>10個</b>選び、3つの事象（異物混入・機械故障・廃棄物処理）を<b>どれだけ回避できるか</b>を掛け算で求めましょう。</p>
+  <h1>🍪 お菓子工場 リスク評価アクティビティ</h1>
+  <p>対策を<b>10個</b>選び、3つの事象（異物混入・機械故障・廃棄物漏洩）を<b>どれだけ回避できるか</b>を掛け算で求めましょう。</p>
   <div class="card g">
     <b>計算ルール</b>
     <div>各対策の数字＝その事象を<b>回避できる確率</b>。同じ事象に効く対策を選ぶと、<b>回避できない確率どうしを掛け算</b>します。</div>
-    <div class="f">初期の回避確率：異物混入 50% ／ 機械故障 60% ／ 廃棄物処理 90%</div>
-    <div class="f">事象の回避確率 ＝ 1 −（1−初期値）×（1−対策Aの確率）×（1−対策Bの確率）×…</div>
-    <div class="f">3つすべて回避できる確率 ＝ 3つの事象の回避確率の積</div>
-    <div class="note">※数値は教育用の架空データです。もし10,000ロットで事故が1回も起きなかったら……？</div>
   </div>
 
   <h2>① 対策を10個選ぶ</h2>
@@ -70,7 +66,7 @@ th{background:#f6f9f7;color:var(--navy)}
 </div></div>
 
 <script>
-const HZ=['異物混入','機械故障','廃棄物処理'];
+const HZ=['異物混入','機械故障','廃棄物漏洩'];
 const M=[
  ['原材料の受入検査',50,0,0],['仕入先の監査・認証',30,0,0],['材料ロット管理システム',60,0,0],
  ['保管庫の温湿度監視',20,40,0],['アレルゲン専用保管区画',30,0,10],['器具・設備の色分け',10,10,10],
@@ -80,7 +76,7 @@ const M=[
  ['出荷前抜取検査',10,30,10],['不適合品の隔離・廃棄手順',0,0,50],['停電・空調停止時の対応計画',0,40,10],
  ['廃棄物の電子管理',0,0,40],['廃棄物動線の分離',0,0,30]
 ];
-const BASE=[.5,.6,.9];
+const BASE=[.8,.9,.95];
 const sel=[];
 const $=id=>document.getElementById(id);
 const pc=(x,d=1)=>(x*100).toFixed(d)+'%';
@@ -126,7 +122,7 @@ function calc(){
 }
 function disaster(){
   return '<div class="card" style="background:#fff0ef;border-color:#f0b4b0"><b style="color:var(--red);font-size:1.2rem">🌋 大災害が発生しました！</b>'+
-   '<p>10,000ロットすべて事故なし……でも、表に載っていない<b>想定外の事象（大災害）</b>が起きました。<br>どんなに対策を重ねても、想定していないリスクは残ります。これが「未知のリスク」です。</p></div>';
+   '<p>10,000ロットすべて事故なし……でも、表に載っていない<b>地震で生産ロットが</b>崩れてしまいました。<br>どんなに対策を重ねても、想定していないリスクは残ります。これがリスク評価の限界です。</p></div>';
 }
 function sim(){
   if(!res)return;
@@ -134,7 +130,7 @@ function sim(){
   for(let t=0;t<N;t++){let ok=true;for(let k=0;k<3;k++){if(Math.random()>=res.av[k]){c[k]++;ok=false;}}if(ok)safe++;}
   $('simOut').innerHTML='<div>事故なしのロット：<b class="big">'+safe.toLocaleString()+'</b> / '+N.toLocaleString()+'（理論値 '+pc(res.all)+'）</div>'+
    '<table><tr><th>事象</th><th>発生した回数</th><th>理論値</th></tr>'+HZ.map((h,k)=>'<tr><td>'+h+'</td><td>'+c[k].toLocaleString()+'</td><td>'+Math.round((1-res.av[k])*N).toLocaleString()+'</td></tr>').join('')+'</table>'+
-   (safe===N?disaster():'<p class="note">実行するたびに少しずつ結果が変わります。10,000ロットで事故が1回も起きなければ、想定外の「大災害」が発生します。</p>');
+   (safe===N?disaster():'<p class="note">実行するたびに少しずつ結果が変わります。</p>');
 }
 $('reset').onclick=()=>{sel.length=0;render();};
 render();
