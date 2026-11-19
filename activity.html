@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>お菓子工場 安全対策アクティビティ</title>
+<style>
+:root{--green:#1f9d57;--green-d:#15783f;--green-l:#e8f6ee;--green-m:#bfe5cf;--navy:#10264a;--ink:#25324a;--gray:#6b778c;--line:#e2e8f0;--red:#d9534f}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",Meiryo,sans-serif;line-height:1.7}
+main{max-width:980px;margin:0 auto;padding:18px 16px 140px}
+h1{color:var(--navy);font-size:1.5rem;margin:0 0 .3em}
+h2{color:var(--navy);font-size:1.1rem;border-left:6px solid var(--green);padding-left:.6em;margin:1.2em 0 .5em}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin:12px 0;box-shadow:0 2px 10px rgba(16,38,74,.04)}
+.card.g{background:var(--green-l);border-color:var(--green-m)}
+.note{font-size:.84rem;color:var(--gray)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+.opt{border:2px solid var(--line);background:#fff;border-radius:14px;padding:10px;text-align:left;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:6px;color:inherit}
+.opt:hover{border-color:var(--green-m)}
+.opt.on{border-color:var(--green);background:var(--green-l)}
+.opt b{font-size:.9rem;color:var(--navy);line-height:1.35}
+.tg{display:flex;gap:4px;flex-wrap:wrap}
+.tg span{font-size:.72rem;background:#fff;border:1px solid var(--line);border-radius:6px;padding:0 6px}
+.tg .none{color:var(--gray);background:#f4f6f8}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--green);padding:8px 14px;box-shadow:0 -4px 16px rgba(16,38,74,.1)}
+.bar .in{max-width:980px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pill{background:var(--green-l);border:1px solid var(--green-m);border-radius:999px;padding:1px 4px 1px 10px;font-size:.78rem;display:inline-flex;gap:3px;align-items:center}
+.pill button{border:0;background:none;cursor:pointer;color:var(--gray)}
+.btn{border:0;background:var(--green);color:#fff;font:inherit;font-weight:700;padding:10px 22px;border-radius:999px;cursor:pointer;box-shadow:0 3px 0 var(--green-d)}
+.btn.ghost{background:#fff;color:var(--green-d);border:2px solid var(--green);box-shadow:none}
+.btn[disabled]{background:#c9d3cd;box-shadow:none;cursor:not-allowed}
+.right{margin-left:auto}
+.hz{margin:10px 0}
+.hz .row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:.95rem}
+.f{font-family:Consolas,monospace;font-size:.82rem;background:#f1f5f2;border-radius:6px;padding:2px 8px;display:inline-block;margin:2px 0;word-break:break-all}
+.track{height:18px;border-radius:999px;background:#fde4e2;overflow:hidden}
+.track i{display:block;height:100%;background:var(--green);transition:width .3s}
+.big{font-size:2rem;font-weight:800;color:var(--navy)}
+textarea{width:100%;min-height:64px;border:1.5px solid var(--line);border-radius:12px;padding:8px;font:inherit}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+td,th{border-bottom:1px solid var(--line);padding:5px 8px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{background:#f6f9f7;color:var(--navy)}
+</style>
+</head>
+<body>
+<main>
+  <h1>🍪 お菓子工場 安全対策アクティビティ</h1>
+  <p>対策を<b>10個</b>選び、3つの事象（異物混入・機械故障・廃棄物処理）を<b>どれだけ回避できるか</b>を掛け算で求めましょう。</p>
+  <div class="card g">
+    <b>計算ルール</b>
+    <div>各対策の数字＝その事象を<b>回避できる確率</b>。同じ事象に効く対策を選ぶと、<b>回避できない確率どうしを掛け算</b>します。</div>
+    <div class="f">初期の回避確率：異物混入 50% ／ 機械故障 60% ／ 廃棄物処理 90%</div>
+    <div class="f">事象の回避確率 ＝ 1 −（1−初期値）×（1−対策Aの確率）×（1−対策Bの確率）×…</div>
+    <div class="f">3つすべて回避できる確率 ＝ 3つの事象の回避確率の積</div>
+    <div class="note">※数値は教育用の架空データです。もし10,000ロットで事故が1回も起きなかったら……？</div>
+  </div>
+
+  <h2>① 対策を10個選ぶ</h2>
+  <div class="grid" id="grid"></div>
+
+  <div id="out"></div>
+</main>
+
+<div class="bar"><div class="in">
+  <b id="cnt">0/10</b><span id="pills" style="flex:1;display:flex;gap:4px;flex-wrap:wrap"></span>
+  <button class="btn ghost" id="reset">選び直す</button>
+</div></div>
+
+<script>
+const HZ=['異物混入','機械故障','廃棄物処理'];
+const M=[
+ ['原材料の受入検査',50,0,0],['仕入先の監査・認証',30,0,0],['材料ロット管理システム',60,0,0],
+ ['保管庫の温湿度監視',20,40,0],['アレルゲン専用保管区画',30,0,10],['器具・設備の色分け',10,10,10],
+ ['作業者の教育',30,30,10],['入室時の手洗い確認',40,0,0],['金属検出機',50,10,0],
+ ['X線異物検査装置',70,0,0],['温度自動調整',0,40,0],['設備の点検整備',0,0,0],
+ ['スペアの用意',0,50,0],['非常停止スイッチ',20,20,0],['重量・内容量の自動検査',30,0,0],
+ ['出荷前抜取検査',10,30,10],['不適合品の隔離・廃棄手順',0,0,50],['停電・空調停止時の対応計画',0,40,10],
+ ['廃棄物の電子管理',0,0,40],['廃棄物動線の分離',0,0,30]
+];
+const BASE=[.5,.6,.9];
+const sel=[];
+const $=id=>document.getElementById(id);
+const pc=(x,d=1)=>(x*100).toFixed(d)+'%';
+function render(){
+  $('grid').innerHTML=M.map((m,i)=>'<button class="opt'+(sel.includes(i)?' on':'')+'" data-i="'+i+'"><b>'+m[0]+'</b><div class="tg">'+
+    HZ.map((h,k)=>m[k+1]?'<span>'+h+' '+m[k+1]+'%</span>':'').join('')+(m[1]+m[2]+m[3]===0?'<span class="none">数字なし</span>':'')+'</div></button>').join('');
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,j=sel.indexOf(i);
+    if(j>=0)sel.splice(j,1);else if(sel.length<10)sel.push(i);else{$('cnt').textContent='10個まで！外してから選んでください';setTimeout(bar,1500);return;}
+    render();});
+  bar();calc();
+}
+function bar(){
+  $('cnt').textContent=sel.length+'/10';
+  $('pills').innerHTML=sel.map(i=>'<span class="pill">'+M[i][0]+'<button data-i="'+i+'">×</button></span>').join('');
+  $('pills').querySelectorAll('button').forEach(b=>b.onclick=()=>{sel.splice(sel.indexOf(+b.dataset.i),1);render();});
+}
+let res=null;
+function calc(){
+  const out=$('out');
+  if(sel.length<10){out.innerHTML='<p class="note">あと '+(10-sel.length)+' 個選ぶと、計算結果が表示されます。</p>';res=null;return;}
+  const av=[],rows=[];
+  HZ.forEach((h,k)=>{
+    const used=sel.filter(i=>M[i][k+1]>0);
+    const miss=used.reduce((a,i)=>a*(1-M[i][k+1]/100),1-BASE[k]);
+    av[k]=1-miss;
+    rows.push({h,used,miss,a:av[k]});
+  });
+  const all=av[0]*av[1]*av[2];
+  res={av,all};
+  let h='<h2>② 計算結果</h2>';
+  rows.forEach(r=>{
+    const f=['(1−'+BASE[HZ.indexOf(r.h)]+')[初期]'].concat(r.used.map(i=>'(1−'+(M[i][HZ.indexOf(r.h)+1]/100)+')')).join(' × ');
+    h+='<div class="card hz"><div class="row"><b>'+r.h+'</b><span>回避できる確率 <b style="color:var(--green-d);font-size:1.2rem">'+pc(r.a)+'</b></span></div>'+
+      '<div class="track"><i style="width:'+r.a*100+'%"></i></div>'+
+      '<div class="f">回避できない確率 ＝ '+f+' ＝ '+pc(r.miss)+'</div>'+
+      '<div class="note">対象の対策：'+(r.used.map(i=>M[i][0]).join('、')||'なし')+'</div></div>';
+  });
+  h+='<div class="card g"><div>3つすべて回避できる確率 ＝ '+av.map(a=>pc(a,0)).join(' × ')+'</div><div class="big">'+pc(all)+'</div>'+
+    '<div class="note">残りの '+pc(1-all)+' は、どれか1つ以上の事象が起きるリスクです。</div></div>';
+  h+='<h2>③ 10,000ロットで検証する</h2><div class="card"><button class="btn" id="sim">▶ 10,000ロットを生産する</button><div id="simOut" style="margin-top:10px"></div></div>';
+  out.innerHTML=h;
+  $('sim').onclick=sim;
+}
+function disaster(){
+  return '<div class="card" style="background:#fff0ef;border-color:#f0b4b0"><b style="color:var(--red);font-size:1.2rem">🌋 大災害が発生しました！</b>'+
+   '<p>10,000ロットすべて事故なし……でも、表に載っていない<b>想定外の事象（大災害）</b>が起きました。<br>どんなに対策を重ねても、想定していないリスクは残ります。これが「未知のリスク」です。</p></div>';
+}
+function sim(){
+  if(!res)return;
+  const N=10000,c=[0,0,0];let safe=0;
+  for(let t=0;t<N;t++){let ok=true;for(let k=0;k<3;k++){if(Math.random()>=res.av[k]){c[k]++;ok=false;}}if(ok)safe++;}
+  $('simOut').innerHTML='<div>事故なしのロット：<b class="big">'+safe.toLocaleString()+'</b> / '+N.toLocaleString()+'（理論値 '+pc(res.all)+'）</div>'+
+   '<table><tr><th>事象</th><th>発生した回数</th><th>理論値</th></tr>'+HZ.map((h,k)=>'<tr><td>'+h+'</td><td>'+c[k].toLocaleString()+'</td><td>'+Math.round((1-res.av[k])*N).toLocaleString()+'</td></tr>').join('')+'</table>'+
+   (safe===N?disaster():'<p class="note">実行するたびに少しずつ結果が変わります。10,000ロットで事故が1回も起きなければ、想定外の「大災害」が発生します。</p>');
+}
+$('reset').onclick=()=>{sel.length=0;render();};
+render();
+</script>
+</body>
+</html>
